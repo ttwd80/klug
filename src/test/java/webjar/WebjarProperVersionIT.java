@@ -10,7 +10,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -18,6 +17,7 @@ import org.springframework.core.io.Resource;
 
 /**
  * @version 1.0 - 2016-06-19
+ * @version 1.1 - 2016-06-19
  * @author ttwangsa
  *
  */
@@ -57,19 +57,18 @@ public class WebjarProperVersionIT {
 		}
 
 		public boolean isValid(final String value) {
-			if (value.startsWith(prefix)) {
-				try {
-					final String location = "/META-INF/resources" + value;
-					final long length = new ClassPathResource(location).contentLength();
-					if (length < 0) {
-						return false;
-					} else {
-						return true;
-					}
-				} catch (final IOException e) {
+			if (!value.startsWith(prefix)) {
+				return false;
+			}
+			try {
+				final String location = "/META-INF/resources" + value;
+				final long length = new ClassPathResource(location).contentLength();
+				if (length < 0) {
 					return false;
+				} else {
+					return true;
 				}
-			} else {
+			} catch (final IOException e) {
 				return false;
 			}
 		}
@@ -78,21 +77,28 @@ public class WebjarProperVersionIT {
 			final List<String> list = new ArrayList<>();
 			final Properties properties = new Properties();
 			final Resource resource = new ClassPathResource(filename);
-			final InputStream inputStream = resource.getInputStream();
-			properties.load(inputStream);
-			final Enumeration<?> enumeration = properties.propertyNames();
-			while (enumeration.hasMoreElements()) {
-				final Object next = enumeration.nextElement();
-				if (next != null) {
-					final String value = properties.getProperty(next.toString());
-					if (StringUtils.trimToNull(value) != null) {
-						list.add(value);
-					}
-				}
+			try (final InputStream inputStream = resource.getInputStream()) {
+				properties.load(inputStream);
+				final Enumeration<?> enumeration = properties.propertyNames();
+				enumerationToList(list, properties, enumeration);
 			}
-			IOUtils.closeQuietly(inputStream);
 			Collections.sort(list);
 			return list;
+		}
+
+		private void enumerationToList(final List<String> list, final Properties properties,
+				final Enumeration<?> enumeration) {
+			while (enumeration.hasMoreElements()) {
+				final Object next = enumeration.nextElement();
+				if (next == null) {
+					continue;
+				}
+				final String key = next.toString();
+				final String value = properties.getProperty(key);
+				if (StringUtils.trimToNull(value) != null) {
+					list.add(value);
+				}
+			}
 		}
 	}
 }
