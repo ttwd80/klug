@@ -34,6 +34,7 @@ import org.xml.sax.SAXException;
 /**
  * @version 1.0 - 2016-01-29
  * @version 1.1 - 2016-06-19
+ * @version 1.2 - 2016-07-02 - if bad, tells the good version number
  * @author ttwangsa
  *
  */
@@ -137,7 +138,7 @@ public class MavenLatestVersionIT {
 			final String version = getLatestVersion(dependency);
 			if (!version.equals(dependency.getVersion())) {
 				messages.add("[" + dependency.getArtifactId() + ":" + dependency.getGroupId() + ":"
-						+ dependency.getVersion() + "] - [" + version + "] - BAD");
+						+ dependency.getVersion() + "] - [" + version + "] - BAD [" + version + "]");
 
 			} else {
 				System.out.println("[" + dependency.getArtifactId() + ":" + dependency.getGroupId() + ":"
