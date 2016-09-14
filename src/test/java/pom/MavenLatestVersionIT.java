@@ -35,6 +35,7 @@ import org.xml.sax.SAXException;
  * @version 1.0 - 2016-01-29
  * @version 1.1 - 2016-06-19
  * @version 1.2 - 2016-07-02 - if bad, tells the good version number
+ * @version 1.2.1 - 2016-09-14 - use https for mvnrepository
  * @author ttwangsa
  *
  */
@@ -156,7 +157,7 @@ public class MavenLatestVersionIT {
 
 	private String getLatestVersion(final Dependency dependency) throws IOException {
 		// http://mvnrepository.com/artifact/org.jsoup/jsoup
-		final String url = "http://mvnrepository.com/artifact/" + dependency.getGroupId() + "/"
+		final String url = "https://mvnrepository.com/artifact/" + dependency.getGroupId() + "/"
 				+ dependency.getArtifactId();
 		final org.jsoup.nodes.Document doc = Jsoup.connect(url).get();
 		return doc.select("a.vbtn.release:not(.candidate)").first().text();
