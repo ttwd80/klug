@@ -24,6 +24,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
 import org.junit.Test;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.w3c.dom.Document;
@@ -36,6 +37,7 @@ import org.xml.sax.SAXException;
  * @version 1.1 - 2016-06-19
  * @version 1.2 - 2016-07-02 - if bad, tells the good version number
  * @version 1.2.1 - 2016-09-14 - use https for mvnrepository
+ * @version 1.2.2 - 2017-01-20 - handle multiple css expression to get version
  * @author ttwangsa
  *
  */
@@ -160,7 +162,14 @@ public class MavenLatestVersionIT {
 		final String url = "https://mvnrepository.com/artifact/" + dependency.getGroupId() + "/"
 				+ dependency.getArtifactId();
 		final org.jsoup.nodes.Document doc = Jsoup.connect(url).get();
-		return doc.select("a.vbtn.release:not(.candidate)").first().text();
+		final String[] selectors = { "a.vbtn.release:not(.candidate)", "a.vbtn.general.availability:not(.candidate)" };
+		for (final String selector : selectors) {
+			final Elements e = doc.select(selector);
+			if (e.size() > 0) {
+				return e.first().text();
+			}
+		}
+		throw new RuntimeException(url);
 	}
 
 	private void merge(final List<? extends Dependency> list, final Map<String, String> map) {
